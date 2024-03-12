@@ -14,7 +14,8 @@ def create_table(conn):
         Receiver_address VARCHAR(255) NOT NULL,
         Type VARCHAR(255),
         Amount INT,
-        Confirm_time INT
+        Confirm_time INT,
+        Raw_data JSON
     )
     """
     cursor.execute(create_table_query)
@@ -43,6 +44,6 @@ if __name__ == "__main__":
 
     if conn:
         print("success connect")
-        # create_table(conn)
+        create_table(conn)
         create_addr_table(conn)
         conn.close()

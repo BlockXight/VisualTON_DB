@@ -3,9 +3,10 @@ class tx:
     block_id: int
     sender_address: str
     receiver_address: str
-    type: str
+    transaction_type: str
     amount: int
     confirm_time: int
+    raw_data: str
 
 
 class addr:
@@ -15,22 +16,25 @@ class addr:
     url: str
 
 
-def add_data(conn, transaction_data):
+def add_data(conn, all_txs):
     try:
         cursor = conn.cursor()
         sql = """
-        INSERT INTO transactions (Transaction_id, Block_id, Sender_address, Receiver_address, Type, Amount, Confirm_time)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO transactions (Transaction_id, Block_id, Sender_address, Receiver_address, Type, Amount, Confirm_time, Raw_data)
+        VALUES (%s, %s, %s, %s, %s, %s, %s,%s)
         """
-        for tx in transaction_data:
+        for tx, raw_data in all_txs:
+            print(f"Transaction Type: {tx['transaction_type']}")
+            print(f"Raw Data: {tx['raw_data'][:100]}...")
             data = (
                 tx["tx_id"],
                 tx["block_id"],
                 tx["sender_address"],
                 tx["receiver_address"],
-                tx["type"],
+                tx["transaction_type"],
                 (int(tx["amount"]) / 1000000000),
                 tx["confirm_time"],
+                raw_data
             )
             cursor.execute(sql, data)
 
@@ -90,18 +94,20 @@ def get_table_data(conn) -> [tx]:
                 block_id,
                 sender_address,
                 receiver_address,
-                type,
+                transaction_type,
                 amount,
                 confirm_time,
+                raw_data
             ) = row
             data: tx = {
                 "Transaction_id": transaction_id,
                 "Block_id": block_id,
                 "Sender_address": sender_address,
                 "Receiver_address": receiver_address,
-                "Type": type,
+                "Type": transaction_type,
                 "Amount": amount,
                 "Confirm_time": confirm_time,
+                "Raw_data": raw_data
             }
             data_list.append(data)
 
@@ -172,6 +178,7 @@ def get_min_max_amount_data(conn) -> [tx]:
             "type": min_data[4],
             "amount": min_data[5],
             "confirm_time": min_data[6],
+            "raw_data": min_data[7]
         }
 
     if max_data:
@@ -183,6 +190,7 @@ def get_min_max_amount_data(conn) -> [tx]:
             "type": max_data[4],
             "amount": max_data[5],
             "confirm_time": max_data[6],
+            "raw_data": min_data[7]
         }
 
     return [min_tx, max_tx]

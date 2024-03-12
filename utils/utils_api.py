@@ -17,15 +17,16 @@ class tx:
     block_id: int
     sender_address: str
     receiver_address: str
-    type: str
+    transaction_type: str
     amount: int
     confirm_time: int
+    raw_data: str
 
 
 def create_connection():
     try:
         conn = mysql.connector.connect(
-            host="3.112.222.156",
+            host="localhost",
             port=3306,
             user="root",
             password="0505jo",
@@ -56,6 +57,14 @@ async def get_request(block_url):
 
 
 async def analyze_tx_to_tx_info(transaction, block_id: int) -> Optional[tx]:
+    transaction_type = "TON"
+    if 'in_msg' in transaction and 'decoded_op_name' in transaction['in_msg']:
+        if transaction['in_msg']['decoded_op_name'] == 'jetton_notify':
+            transaction_type = "Jetton"
+        elif transaction['in_msg']['decoded_op_name'] == 'nft_ownership_assigned':
+            transaction_type = "NFT"
+    transaction_json = json.dumps(transaction) 
+
     if "in_msg" in transaction:
         in_msg = transaction["in_msg"]
         if "source" in in_msg and "destination" in in_msg and in_msg["value"] > 0:
@@ -64,11 +73,12 @@ async def analyze_tx_to_tx_info(transaction, block_id: int) -> Optional[tx]:
                 "block_id": block_id,
                 "sender_address": in_msg["source"]["address"],
                 "receiver_address": in_msg["destination"]["address"],
-                "type": "",
+                "type": transaction_type,
                 "amount": in_msg["value"],
                 "confirm_time": transaction["utime"],
             }
-            return res
+            print(res)
+            return (res, transaction_json)
 
     if "out_msgs" in transaction and len(transaction["out_msgs"]) != 0:
         out_msgs = ""
@@ -83,11 +93,12 @@ async def analyze_tx_to_tx_info(transaction, block_id: int) -> Optional[tx]:
                 "block_id": block_id,
                 "sender_address": out_msgs["source"]["address"],
                 "receiver_address": out_msgs["destination"]["address"],
-                "type": "",
+                "type": transaction_type,
                 "amount": out_msgs["value"],
                 "confirm_time": transaction["utime"],
             }
-            return res
+            print(res)
+            return (res, transaction_json)
     tx_id = transaction["hash"]
     print(f"can't analyze tx {tx_id} !")
     # print(transaction)
@@ -104,7 +115,7 @@ async def get_txs_by_block_ids(block_ids: [int]) -> [tx]:
         else:
             block_url = f"https://tonapi.io/v2/blockchain/blocks/(0,8000000000000000,{id})/transactions"
             response = await get_request(block_url)
-
+            
         block_data = response.json()
 
         if "transactions" in block_data:
@@ -117,7 +128,7 @@ async def get_txs_by_block_ids(block_ids: [int]) -> [tx]:
                     print("the tx type:")
                     continue
 
-                tmp: tx = await analyze_tx_to_tx_info(transaction, id)
+                tmp = await analyze_tx_to_tx_info(transaction, id)
 
                 if tmp is not None:
                     all_txs.append(tmp)

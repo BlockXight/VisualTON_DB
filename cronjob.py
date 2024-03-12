@@ -1,5 +1,7 @@
 import schedule
 import asyncio
+import time
+import json
 from utils.utils_api import (
     tx,
     get_txs_by_block_ids,
@@ -16,7 +18,7 @@ from utils.utils_DB import (
     get_min_max_amount_data,
 )
 
-prev_latest_block = 38595043
+prev_latest_block = 42442293
 remove_from = 0
 BLOCK_NUM = 5000
 MAX_BLOCK_DISTANCE = 15
@@ -54,15 +56,15 @@ async def update_database(conn):
             )
         )
 
-    # print("start to get block tx...")
+    print("start to get block tx...")
     added_txs: [tx] = await get_txs_by_block_ids(added_block_ids)
 
-    # print("start to filter the txs...")
+    print("start to filter the txs...")
     added_txs = filter_tx(added_txs)
 
-    # print("start to add new txs in DB...")
+    print("start to add new txs in DB...")
     if len(added_txs) != 0:
-        add_data(conn, added_txs)
+        add_data(conn, added_txs, json.dumps(added_txs))
 
     print("start to remove old txs in DB...")
     if len(removed_block_ids) != 0:
@@ -88,8 +90,9 @@ def my_job():
     conn = create_connection()
     if conn:
         print("connect success")
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(update_database(conn))
+        # loop = asyncio.get_event_loop()
+        # loop.run_until_complete(update_database(conn))
+        asyncio.run(update_database(conn)) 
         conn.close()
 
 
@@ -97,4 +100,5 @@ schedule.every(5).seconds.do(my_job)
 
 while True:
     schedule.run_pending()
-    # time.sleep(1)
+    time.sleep(1)
+
