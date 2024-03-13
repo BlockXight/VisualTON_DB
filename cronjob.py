@@ -18,7 +18,7 @@ from utils.utils_DB import (
     get_min_max_amount_data,
 )
 
-prev_latest_block = 42460295
+prev_latest_block = 42460691
 remove_from = 0
 BLOCK_NUM = 2
 MAX_BLOCK_DISTANCE = 15
@@ -64,12 +64,12 @@ async def update_database(conn):
 
     print("start to add new txs in DB...")
     if len(added_txs) != 0:
-        add_data(conn, added_txs, json.dumps(added_txs))
+        add_data(conn, added_txs)
 
-    print("start to remove old txs in DB...")
-    if len(removed_block_ids) != 0:
-        print(f"remove block {removed_block_ids}")
-        delete_data(conn, removed_block_ids)
+    # print("start to remove old txs in DB...")
+    # if len(removed_block_ids) != 0:
+    #     print(f"remove block {removed_block_ids}")
+    #     delete_data(conn, removed_block_ids)
 
     print("fetch out all exist DB data...")
     all_txs: [tx] = get_table_data(conn)
@@ -95,10 +95,10 @@ def my_job():
         asyncio.run(update_database(conn)) 
         conn.close()
 
-my_job()
-# schedule.every(5).seconds.do(my_job)
+# my_job()
+schedule.every(5).seconds.do(my_job)
 
-# while True:
-#     schedule.run_pending()
-#     time.sleep(1)
+while True:
+    schedule.run_pending()
+    time.sleep(1)
 

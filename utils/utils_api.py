@@ -78,7 +78,7 @@ async def analyze_tx_to_tx_info(transaction, block_id: int) -> Optional[tx]:
                 "confirm_time": transaction["utime"],
                 "raw_data": transaction_json
             }
-            print(transaction_type)
+            # print(transaction_type)
             return res
 
     if "out_msgs" in transaction and len(transaction["out_msgs"]) != 0:
@@ -99,7 +99,7 @@ async def analyze_tx_to_tx_info(transaction, block_id: int) -> Optional[tx]:
                 "confirm_time": transaction["utime"],
                 "raw_data": transaction_json
             }
-            print(transaction_type)
+            # print(transaction_type)
             return res
     tx_id = transaction["hash"]
     print(f"can't analyze tx {tx_id} !")

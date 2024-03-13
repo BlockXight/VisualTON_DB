@@ -3,7 +3,7 @@ class tx:
     block_id: int
     sender_address: str
     receiver_address: str
-    transaction_type: str
+    type: str
     amount: int
     confirm_time: int
     raw_data: str
@@ -24,22 +24,18 @@ def add_data(conn, all_txs):
         VALUES (%s, %s, %s, %s, %s, %s, %s,%s)
         """
         for tx in all_txs:
-            if 'transaction_type' not in tx:
-                print("Transaction type key missing, skipping transaction.")
-                continue
-            print(f"Type: {tx['transaction_type']}")
-            # print(f"Raw Data: {tx['raw_data'][:100]}...")
+            # print(tx)
             data = (
                 tx["tx_id"],
                 tx["block_id"],
                 tx["sender_address"],
                 tx["receiver_address"],
-                tx["transaction_type"],
+                tx["type"],
                 (int(tx["amount"]) / 1000000000),
                 tx["confirm_time"],
                 tx["raw_data"]
             )
-            cursor.execute(sql, data)
+        cursor.execute(sql, data)
 
         conn.commit()
         print("Data added successfully")
