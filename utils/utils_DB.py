@@ -23,9 +23,12 @@ def add_data(conn, all_txs):
         INSERT INTO transactions (Transaction_id, Block_id, Sender_address, Receiver_address, Type, Amount, Confirm_time, Raw_data)
         VALUES (%s, %s, %s, %s, %s, %s, %s,%s)
         """
-        for tx, raw_data in all_txs:
-            print(f"Transaction Type: {tx['transaction_type']}")
-            print(f"Raw Data: {tx['raw_data'][:100]}...")
+        for tx in all_txs:
+            if 'transaction_type' not in tx:
+                print("Transaction type key missing, skipping transaction.")
+                continue
+            print(f"Type: {tx['transaction_type']}")
+            # print(f"Raw Data: {tx['raw_data'][:100]}...")
             data = (
                 tx["tx_id"],
                 tx["block_id"],
@@ -34,7 +37,7 @@ def add_data(conn, all_txs):
                 tx["transaction_type"],
                 (int(tx["amount"]) / 1000000000),
                 tx["confirm_time"],
-                raw_data
+                tx["raw_data"]
             )
             cursor.execute(sql, data)
 
@@ -94,7 +97,7 @@ def get_table_data(conn) -> [tx]:
                 block_id,
                 sender_address,
                 receiver_address,
-                transaction_type,
+                type,
                 amount,
                 confirm_time,
                 raw_data
@@ -104,7 +107,7 @@ def get_table_data(conn) -> [tx]:
                 "Block_id": block_id,
                 "Sender_address": sender_address,
                 "Receiver_address": receiver_address,
-                "Type": transaction_type,
+                "Type": type,
                 "Amount": amount,
                 "Confirm_time": confirm_time,
                 "Raw_data": raw_data

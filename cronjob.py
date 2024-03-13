@@ -18,9 +18,9 @@ from utils.utils_DB import (
     get_min_max_amount_data,
 )
 
-prev_latest_block = 42442293
+prev_latest_block = 42460295
 remove_from = 0
-BLOCK_NUM = 5000
+BLOCK_NUM = 2
 MAX_BLOCK_DISTANCE = 15
 
 # base on basechain, not masterchain
@@ -95,10 +95,10 @@ def my_job():
         asyncio.run(update_database(conn)) 
         conn.close()
 
+my_job()
+# schedule.every(5).seconds.do(my_job)
 
-schedule.every(5).seconds.do(my_job)
-
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+# while True:
+#     schedule.run_pending()
+#     time.sleep(1)
 
